@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npx vite build",
+    "build": "node -e \"import('vite').then(vite => vite.build())\"",
+    "build:direct": "vite build",
     "preview": "vite preview",
     "deploy": "vercel --prod",
     "deploy:dev": "vercel"
