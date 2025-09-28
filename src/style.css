@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-lg shadow-md p-4 sm:p-6 border border-gray-200;
+  }
+  
+  .btn-primary {
+    @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors;
+  }
+  
+  .category-familiar-simple {
+    @apply bg-familiar-simple text-white;
+  }
+  
+  .category-familiar-forget {
+    @apply bg-familiar-forget text-white;
+  }
+  
+  .category-new-word {
+    @apply bg-new-word text-white;
+  }
+  
+  .category-confused {
+    @apply bg-confused text-white;
+  }
+  
+  .category-mastered {
+    @apply bg-mastered text-white;
+  }
+}
+
+/* 移动端优化 */
+@media (max-width: 640px) {
+  .card {
+    @apply p-4;
+  }
+  
+  .btn-primary, .btn-secondary {
+    @apply py-3 px-4 text-base;
+  }
+  
+  /* 移动端触摸优化 */
+  button, a {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
+  /* 移动端滚动优化 */
+  .overflow-y-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+}
