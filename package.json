@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "server": "cd server && npm install && npm start",
+    "server:dev": "cd server && npm install && npm run dev",
     "build": "node -e \"import('vite').then(vite => vite.build())\"",
     "build:direct": "vite build",
     "preview": "vite preview",

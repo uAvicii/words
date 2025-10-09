@@ -1,27 +1,53 @@
 # 📚 专属背单词应用
 
-一款基于纯前端实现的背单词网页应用，帮助用户快速、高效地完成多轮背诵。
+一款支持多用户的背单词网页应用，帮助用户快速、高效地完成多轮背诵。
 
 ## ✨ 核心特性
 
+- **用户登录**：支持账号密码登录，每个用户数据独立保存
 - **快速浏览**：一次性浏览大量单词，快速完成难度分类
 - **分类复习**：根据单词难度类别，设计不同的复习频率和方式
 - **高效记忆**：通过图像联想、混淆对比等方式，提升记忆质量
-- **轻量易用**：纯前端运行，无需后台，支持离线数据存储
+- **数据同步**：前后端数据自动同步，支持离线缓存
 
 ## 🚀 快速开始
 
-### 安装依赖
+### 方式一：一键启动（推荐）
 
+Windows 用户：
+```bash
+start.bat
+```
+
+Mac/Linux 用户：
+```bash
+chmod +x start.sh
+./start.sh
+```
+
+### 方式二：分别启动
+
+1. **启动后端服务器**（新窗口）
+```bash
+npm run server
+```
+
+2. **启动前端应用**（新窗口）
 ```bash
 npm install
-```
-
-### 启动开发服务器
-
-```bash
 npm run dev
 ```
+
+3. **访问应用**
+   - 前端：http://localhost:5173
+   - 后端：http://localhost:3000
+
+### 首次使用
+
+1. 访问 http://localhost:5173
+2. 输入任意用户名和密码
+3. 点击"登录/注册"（首次使用会自动创建账号）
+4. 开始背单词！
 
 ### 构建生产版本
 
@@ -69,36 +95,62 @@ npm run build
 
 ## 🛠 技术栈
 
+### 前端
 - **框架**：Vue 3
 - **状态管理**：Pinia
 - **路由**：Vue Router
 - **样式**：TailwindCSS
 - **构建工具**：Vite
-- **存储**：LocalStorage
+- **本地缓存**：LocalStorage
 
-## 📱 页面结构
+### 后端
+- **运行时**：Node.js
+- **框架**：Express
+- **数据存储**：JSON 文件
+- **跨域支持**：CORS
+
+## 📱 项目结构
 
 ```
-src/
-├── components/          # 组件目录
-├── views/              # 页面组件
-│   ├── Home.vue        # 首页
-│   ├── Browse.vue      # 单词浏览
-│   ├── Review.vue      # 复习页面
-│   └── Settings.vue    # 设置页面
-├── stores/             # 状态管理
-│   └── wordStore.js    # 单词数据管理
-├── router/             # 路由配置
-└── main.js             # 应用入口
+.
+├── src/                    # 前端源码
+│   ├── views/              # 页面组件
+│   │   ├── Login.vue       # 登录页面
+│   │   ├── Home.vue        # 首页
+│   │   ├── Browse.vue      # 单词浏览
+│   │   ├── Review.vue      # 复习页面
+│   │   └── Settings.vue    # 设置页面
+│   ├── stores/             # 状态管理
+│   │   ├── userStore.js    # 用户状态管理
+│   │   └── wordStore.js    # 单词数据管理
+│   ├── router/             # 路由配置
+│   └── App.vue             # 根组件
+├── server/                 # 后端服务器
+│   ├── server.js           # Express 服务器
+│   ├── package.json        # 后端依赖
+│   └── data/               # 用户数据（自动生成）
+│       └── users.json      # 用户信息和单词数据
+├── start.bat               # Windows 一键启动脚本
+└── start.sh                # Mac/Linux 一键启动脚本
 ```
 
 ## 💾 数据存储
 
-应用使用LocalStorage存储以下数据：
-- `vocabulary-words`：单词库数据
+### 后端存储（主要）
+- 位置：`server/data/users.json`
+- 包含：所有用户的账号信息和单词数据
+- 格式：JSON 文件
+
+### 本地缓存（辅助）
+应用使用 LocalStorage 作为本地缓存：
+- `vocabulary-username`：当前登录用户
+- `vocabulary-words`：单词库数据（缓存）
 - `vocabulary-view-mode`：浏览模式设置
-- `vocabulary-review-history`：复习历史记录
-- `vocabulary-review-intervals`：复习间隔设置
+
+### 数据同步机制
+- 登录时从服务器加载数据
+- 所有操作自动同步到服务器
+- 本地缓存保证离线可用
 
 ## 🎨 设计理念
 
@@ -114,13 +166,30 @@ src/
 - 单次复习平均时间 < 20 分钟
 - 用户每日复习单词数 > 200
 
+## 🔄 更新日志
+
+### v2.0 - 用户登录系统
+- ✅ 支持账号密码登录
+- ✅ 多用户数据隔离
+- ✅ 前后端数据同步
+- ✅ Node.js 后端服务器
+- ✅ 路由守卫保护
+
+### v1.0 - 基础功能
+- ✅ 单词浏览和分类
+- ✅ 智能复习算法
+- ✅ 数据导入导出
+- ✅ LocalStorage 存储
+
 ## 🔄 后续迭代
 
+- [ ] 密码加密存储
+- [ ] 数据库支持（MongoDB/PostgreSQL）
 - [ ] 易混淆词自动检测
 - [ ] 多义词轮换练习
 - [ ] 自定义复习算法
-- [ ] 用户账户同步
 - [ ] 移动端PWA支持
+- [ ] 用户头像和个人资料
 
 ## 📄 许可证
 

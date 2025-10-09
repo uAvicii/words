@@ -1,12 +1,15 @@
 <template>
   <div id="app" class="min-h-screen">
-    <nav class="bg-white shadow-sm border-b">
+    <nav v-if="!isLoginPage" class="bg-white shadow-sm border-b">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
           <div class="flex items-center">
             <router-link to="/" class="text-lg sm:text-xl font-bold text-gray-900">
               📚 专属背单词
             </router-link>
+            <span v-if="userStore.username" class="ml-4 text-sm text-gray-600">
+              用户: {{ userStore.username }}
+            </span>
           </div>
           <!-- 桌面端导航 -->
           <div class="hidden md:flex items-center space-x-4">
@@ -38,6 +41,12 @@
             >
               设置
             </router-link>
+            <button 
+              @click="handleLogout"
+              class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+            >
+              登出
+            </button>
           </div>
           <!-- 移动端菜单按钮 -->
           <div class="md:hidden">
@@ -86,6 +95,12 @@
             >
               设置
             </router-link>
+            <button 
+              @click="handleLogout"
+              class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+            >
+              登出
+            </button>
           </div>
         </div>
       </div>
@@ -98,11 +113,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useWordStore } from './stores/wordStore'
+import { useUserStore } from './stores/userStore'
 
+const route = useRoute()
+const router = useRouter()
 const wordStore = useWordStore()
+const userStore = useUserStore()
 const showMobileMenu = ref(false)
+
+const isLoginPage = computed(() => route.path === '/login')
 
 const toggleMobileMenu = () => {
   showMobileMenu.value = !showMobileMenu.value
@@ -112,8 +134,19 @@ const closeMobileMenu = () => {
   showMobileMenu.value = false
 }
 
+const handleLogout = () => {
+  userStore.logout()
+  router.push('/login')
+}
+
 onMounted(() => {
-  // 初始化数据
-  wordStore.initializeData()
+  // 恢复登录状态
+  userStore.restoreSession()
+  
+  // 如果已登录，初始化数据
+  if (userStore.isLoggedIn) {
+    wordStore.initializeData()
+    wordStore.loadFromServer()
+  }
 })
 </script>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API 测试工具</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+
+    .test-section {
+      margin: 20px 0;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    button {
+      background: #007bff;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    .result {
+      margin-top: 10px;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 4px;
+      white-space: pre-wrap;
+      font-family: monospace;
+    }
+
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .success {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    input {
+      padding: 8px;
+      margin: 5px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      width: 200px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>🔧 背单词 API 测试工具</h1>
+
+  <div class="test-section">
+    <h3>1. 测试服务器连接</h3>
+    <p>确认后端服务器是否正常运行</p>
+    <button onclick="testConnection()">测试连接</button>
+    <div id="connection-result" class="result"></div>
+  </div>
+
+  <div class="test-section">
+    <h3>2. 测试注册/登录</h3>
+    <input type="text" id="username" placeholder="用户名" value="testuser">
+    <input type="password" id="password" placeholder="密码" value="123456">
+    <br>
+    <button onclick="testLogin()">测试登录/注册</button>
+    <div id="login-result" class="result"></div>
+  </div>
+
+  <div class="test-section">
+    <h3>3. 测试获取单词</h3>
+    <input type="text" id="get-username" placeholder="用户名" value="testuser">
+    <button onclick="testGetWords()">获取单词数据</button>
+    <div id="get-words-result" class="result"></div>
+  </div>
+
+  <div class="test-section">
+    <h3>诊断信息</h3>
+    <p>API 地址: <strong>http://localhost:3000</strong></p>
+    <p>前端地址: <strong>http://localhost:5173</strong></p>
+  </div>
+
+  <script>
+    const API_BASE = 'http://localhost:3000/api';
+
+    async function testConnection() {
+      const resultDiv = document.getElementById('connection-result');
+      resultDiv.textContent = '测试中...';
+      resultDiv.className = 'result';
+
+      try {
+        const response = await fetch(`${API_BASE}/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            username: 'connection-test',
+            password: 'test123'
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          resultDiv.className = 'result success';
+          resultDiv.textContent = '✅ 服务器连接成功！\n\n' + JSON.stringify(data, null, 2);
+        } else {
+          resultDiv.className = 'result error';
+          resultDiv.textContent = `❌ 服务器返回错误: ${response.status}\n${await response.text()}`;
+        }
+      } catch (error) {
+        resultDiv.className = 'result error';
+        resultDiv.textContent = `❌ 连接失败！\n\n错误: ${error.message}\n\n请确保:\n1. 后端服务器已启动 (npm run server)\n2. 服务器运行在 http://localhost:3000`;
+      }
+    }
+
+    async function testLogin() {
+      const resultDiv = document.getElementById('login-result');
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      resultDiv.textContent = '测试中...';
+      resultDiv.className = 'result';
+
+      try {
+        const response = await fetch(`${API_BASE}/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          resultDiv.className = 'result success';
+          resultDiv.textContent = `✅ ${data.message}\n\n` + JSON.stringify(data, null, 2);
+        } else {
+          resultDiv.className = 'result error';
+          resultDiv.textContent = `❌ ${data.error}\n\n` + JSON.stringify(data, null, 2);
+        }
+      } catch (error) {
+        resultDiv.className = 'result error';
+        resultDiv.textContent = `❌ 请求失败: ${error.message}`;
+      }
+    }
+
+    async function testGetWords() {
+      const resultDiv = document.getElementById('get-words-result');
+      const username = document.getElementById('get-username').value;
+
+      resultDiv.textContent = '测试中...';
+      resultDiv.className = 'result';
+
+      try {
+        const response = await fetch(`${API_BASE}/words/${username}`);
+        const data = await response.json();
+
+        if (response.ok) {
+          resultDiv.className = 'result success';
+          resultDiv.textContent = `✅ 获取成功\n单词数量: ${data.words.length}\n\n` + JSON.stringify(data, null, 2);
+        } else {
+          resultDiv.className = 'result error';
+          resultDiv.textContent = `❌ ${data.error}`;
+        }
+      } catch (error) {
+        resultDiv.className = 'result error';
+        resultDiv.textContent = `❌ 请求失败: ${error.message}`;
+      }
+    }
+  </script>
+</body>
+
+</html>

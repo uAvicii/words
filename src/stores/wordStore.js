@@ -1,5 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { useUserStore } from './userStore'
+
+const API_BASE = 'http://localhost:3000/api'
 
 export const useWordStore = defineStore('word', () => {
   // 状态
@@ -85,12 +88,53 @@ export const useWordStore = defineStore('word', () => {
     localStorage.setItem('vocabulary-words', JSON.stringify(words.value))
   }
 
+  // 保存到后端
+  const saveToServer = async () => {
+    const userStore = useUserStore()
+    if (!userStore.isLoggedIn || !userStore.username) return
+
+    try {
+      const response = await fetch(`${API_BASE}/words/${userStore.username}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ words: words.value })
+      })
+
+      if (!response.ok) {
+        console.error('保存到服务器失败')
+      }
+    } catch (error) {
+      console.error('保存到服务器错误:', error)
+    }
+  }
+
+  // 从后端加载
+  const loadFromServer = async () => {
+    const userStore = useUserStore()
+    if (!userStore.isLoggedIn || !userStore.username) return
+
+    try {
+      const response = await fetch(`${API_BASE}/words/${userStore.username}`)
+      const data = await response.json()
+
+      if (data.words && data.words.length > 0) {
+        words.value = data.words
+        saveToLocalStorage()
+      }
+    } catch (error) {
+      console.error('从服务器加载错误:', error)
+    }
+  }
+
   const updateWordCategory = (wordId, category) => {
     const word = words.value.find(w => w.id === wordId)
     if (word) {
       word.category = category
       word.lastReviewed = new Date().toISOString()
       saveToLocalStorage()
+      saveToServer()
     }
   }
 
@@ -106,6 +150,7 @@ export const useWordStore = defineStore('word', () => {
       }
 
       saveToLocalStorage()
+      saveToServer()
     }
   }
 
@@ -132,6 +177,7 @@ export const useWordStore = defineStore('word', () => {
     }
     words.value.push(newWord)
     saveToLocalStorage()
+    saveToServer()
   }
 
   const deleteWord = (wordId) => {
@@ -139,6 +185,7 @@ export const useWordStore = defineStore('word', () => {
     if (index > -1) {
       words.value.splice(index, 1)
       saveToLocalStorage()
+      saveToServer()
     }
   }
 
@@ -161,6 +208,7 @@ export const useWordStore = defineStore('word', () => {
           const importedWords = JSON.parse(e.target.result)
           words.value = importedWords
           saveToLocalStorage()
+          saveToServer()
           resolve()
         } catch (error) {
           reject(error)
@@ -168,6 +216,12 @@ export const useWordStore = defineStore('word', () => {
       }
       reader.readAsText(file)
     })
+  }
+
+  // 设置单词（用于登录后加载）
+  const setWords = (newWords) => {
+    words.value = newWords
+    saveToLocalStorage()
   }
 
   return {
@@ -190,6 +244,9 @@ export const useWordStore = defineStore('word', () => {
     addWord,
     deleteWord,
     exportWords,
-    importWords
+    importWords,
+    setWords,
+    loadFromServer,
+    saveToServer
   }
 })
