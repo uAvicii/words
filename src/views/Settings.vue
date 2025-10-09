@@ -93,7 +93,7 @@
           <input 
             ref="fileInput"
             type="file" 
-            accept=".json"
+            accept=".json,.txt"
             @change="handleFileImport"
             class="hidden"
           />
@@ -101,8 +101,11 @@
             @click="$refs.fileInput.click()"
             class="btn-secondary w-full"
           >
-            📥 导入单词库
+            📥 导入单词库 (JSON/TXT)
           </button>
+          <p class="text-xs text-gray-500 mt-2">
+            支持 JSON 格式或 TXT 格式（每行：单词 释义）
+          </p>
         </div>
       </div>
     </div>
@@ -285,14 +288,84 @@ const addNewWord = () => {
 const handleFileImport = (event) => {
   const file = event.target.files[0]
   if (file) {
-    importWords(file)
-      .then(() => {
-        alert('导入成功！')
-      })
-      .catch(() => {
-        alert('导入失败，请检查文件格式')
-      })
+    const fileExtension = file.name.split('.').pop().toLowerCase()
+    
+    if (fileExtension === 'txt') {
+      // 处理 TXT 格式
+      importWordsFromTxt(file)
+        .then((count) => {
+          alert(`导入成功！共导入 ${count} 个单词`)
+          event.target.value = '' // 清空文件选择
+        })
+        .catch((error) => {
+          alert('导入失败：' + error.message)
+          event.target.value = ''
+        })
+    } else {
+      // 处理 JSON 格式
+      importWords(file)
+        .then(() => {
+          alert('导入成功！')
+          event.target.value = ''
+        })
+        .catch(() => {
+          alert('导入失败，请检查文件格式')
+          event.target.value = ''
+        })
+    }
   }
+}
+
+// 从 TXT 文件导入单词
+const importWordsFromTxt = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      try {
+        const text = e.target.result
+        const lines = text.split('\n').filter(line => line.trim())
+        
+        let successCount = 0
+        let failCount = 0
+        
+        lines.forEach(line => {
+          // 支持多种分隔符：制表符、多个空格、单个空格
+          const parts = line.trim().split(/\t|  +| /)
+          
+          if (parts.length >= 2) {
+            const word = parts[0].trim()
+            const meaning = parts.slice(1).join(' ').trim()
+            
+            if (word && meaning) {
+              addWord(word, meaning)
+              successCount++
+            } else {
+              failCount++
+            }
+          } else {
+            failCount++
+          }
+        })
+        
+        if (successCount === 0) {
+          reject(new Error('没有找到有效的单词数据。请确保每行格式为：单词 释义'))
+        } else {
+          resolve(successCount)
+          if (failCount > 0) {
+            setTimeout(() => {
+              alert(`提示：有 ${failCount} 行数据格式不正确，已跳过`)
+            }, 500)
+          }
+        }
+      } catch (error) {
+        reject(new Error('文件解析失败：' + error.message))
+      }
+    }
+    reader.onerror = () => {
+      reject(new Error('文件读取失败'))
+    }
+    reader.readAsText(file, 'UTF-8')
+  })
 }
 
 // 获取分类名称
